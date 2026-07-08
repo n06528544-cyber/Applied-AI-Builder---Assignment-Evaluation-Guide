@@ -1,0 +1,23 @@
+# ---------------------------------------------------------------------------
+# DDR Report Generator - runtime dependencies
+# ---------------------------------------------------------------------------
+# Core (required)
+pydantic>=2.5
+pyyaml>=6.0
+jinja2>=3.1
+markdown>=3.5
+Pillow>=10.0
+# PDF text + image ingestion (required for real PDF inputs)
+pymupdf>=1.23
+# PDF export from HTML (required for .pdf output)
+weasyprint>=60.0
+# Optional LLM providers (install only the ones you use)
+openai>=1.12
+anthropic>=0.18
+# Dev / test / UX
+pytest>=8.0
+streamlit>=1.32
+python-dotenv>=1.0
+
+# Optional: regenerate the bundled sample PDF inputs
+reportlab>=4.0

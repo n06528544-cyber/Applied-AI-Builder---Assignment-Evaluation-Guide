@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+env/
+
+# Environment / secrets
+.env
+*.local
+
+# Generated artefacts
+samples/output/*.html
+samples/output/*.pdf
+samples/output/*.md
+!samples/output/DDR_Example.*
+
+# Tooling caches
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.idea/
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db

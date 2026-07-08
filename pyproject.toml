@@ -1,0 +1,40 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ddr-report-generator"
+version = "1.0.0"
+description = "Applied AI Builder: generate a client-ready DDR from inspection + thermal reports."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+dependencies = [
+    "pydantic>=2.5",
+    "pyyaml>=6.0",
+    "jinja2>=3.1",
+    "markdown>=3.5",
+    "Pillow>=10.0",
+    "pymupdf>=1.23",
+    "weasyprint>=60.0",
+    "openai>=1.12",
+    "anthropic>=0.18",
+    "pytest>=8.0",
+    "streamlit>=1.32",
+    "python-dotenv>=1.0",
+    "reportlab>=4.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0", "ruff"]
+
+[project.scripts]
+ddr = "ddr.cli:main"
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+packages = ["ddr"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src", "."]

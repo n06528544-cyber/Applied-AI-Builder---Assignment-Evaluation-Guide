@@ -1,0 +1,18 @@
+# DDR Report Generator - containerised Streamlit app
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# system deps for weasyprint / pymupdf
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential libpango-1.0-0 libpangocairo-1.0-0 libcairo2 \
+    libffi-dev && rm -rf /var/lib/apt/lists/*
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+
+EXPOSE 8501
+ENTRYPOINT ["streamlit", "run", "src/ddr/app.py", \
+            "--server.address=0.0.0.0", "--server.port=8501"]

@@ -1,0 +1,40 @@
+# ===========================================================================
+# DDR Report Generator - configuration
+# ===========================================================================
+project:
+  name: "DDR Report Generator"
+  version: "1.0.0"
+
+# --- LLM settings -----------------------------------------------------------
+# The deterministic (rule-based) extractor works with NO API key and is the
+# default engine so the project runs out-of-the-box. Set `provider` to enable
+# an LLM for unstructured/free-form documents.
+llm:
+  provider: "none"          # none | openai | anthropic | ollama
+  model: "gpt-4o-mini"      # openai: gpt-4o / gpt-4o-mini ; anthropic: claude-3-5-sonnet
+  temperature: 0.1
+  max_tokens: 2000
+  # read keys from environment / .env ; never hard-code secrets
+  api_key_env: "DDR_LLM_API_KEY"
+  base_url: ""              # for Ollama / proxies, e.g. http://localhost:11434/v1
+
+# --- Extraction behaviour ---------------------------------------------------
+extraction:
+  dedupe_threshold: 0.82        # fuzzy similarity to treat two points as duplicates
+  thermal_anomaly_delta_c: 5.0  # exceed reference temp by this => anomaly
+  default_ref_temp_c: 30.0      # assumed ambient reference when none given
+  min_confidence: 0.0
+
+# --- Report rendering -------------------------------------------------------
+report:
+  brand_name: "Acme Applied AI - Diagnostic Reports"
+  output_format: ["html", "pdf", "md"]
+  include_images: true
+  language: "en"
+  client_friendly: true        # simplify jargon
+
+# --- Paths ------------------------------------------------------------------
+paths:
+  inputs: "samples/inputs"
+  output: "samples/output"
+  images: "samples/inputs/images"
