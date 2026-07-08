@@ -27,10 +27,14 @@ from ddr.report import render_html, render_markdown, render_pdf
 
 
 def _build(inspection_path, thermal_path, config, name, date, out_dir):
+    """Ingest both reports, build the DDR, and write Markdown/HTML/PDF/JSON."""
     inspection = load_document(inspection_path, DocType.INSPECTION)
     thermal = load_document(thermal_path, DocType.THERMAL)
     client = LLMClient(config)
-    report = build_report(inspection, thermal, config, llm_client=client, property_name=name, report_date=date)
+    report = build_report(
+        inspection, thermal, config,
+        llm_client=client, property_name=name, report_date=date,
+    )
     os.makedirs(out_dir, exist_ok=True)
     written: List[str] = []
 
@@ -40,17 +44,24 @@ def _build(inspection_path, thermal_path, config, name, date, out_dir):
         fh.write(md)
     written.append(md_path)
 
-    html = render_html(report, brand=config.get("report", {}).get("brand_name", "Diagnostic Reports"))
+    report_html = render_html(
+        report,
+        brand=config.get("report", {}).get("brand_name", "Diagnostic Reports"),
+    )
     html_path = os.path.join(out_dir, "DDR_Report.html")
     with open(html_path, "w", encoding="utf-8") as fh:
-        fh.write(html)
+        fh.write(report_html)
     written.append(html_path)
 
     try:
         pdf_path = os.path.join(out_dir, "DDR_Report.pdf")
-        render_pdf(report, pdf_path, brand=config.get("report", {}).get("brand_name", "Diagnostic Reports"))
+        render_pdf(
+            report,
+            pdf_path,
+            brand=config.get("report", {}).get("brand_name", "Diagnostic Reports"),
+        )
         written.append(pdf_path)
-    except Exception as exc:
+    except Exception as exc:  # pylint: disable=broad-exception-caught
         print(f"[warn] PDF export skipped: {exc}", file=sys.stderr)
 
     json_path = os.path.join(out_dir, "DDR_Report.json")
@@ -62,15 +73,21 @@ def _build(inspection_path, thermal_path, config, name, date, out_dir):
 
 
 def generate_cmd(args):
+    """Handle `ddr generate`."""
     config = load_config(args.config)
-    report, written = _build(args.inspection, args.thermal, config, args.name, args.date, args.out)
+    report, written = _build(
+        args.inspection, args.thermal, config, args.name, args.date, args.out
+    )
     print(f"DDR generated for: {report.property_name} ({len(report.areas)} areas)")
     for w in written:
         print(f"  - {w}")
 
 
 def demo_cmd(args):
-    root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))  # repo root
+    """Handle `ddr demo` using the bundled sample inputs."""
+    root = os.path.dirname(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    )
     insp = os.path.join(root, "samples", "inputs", "inspection_report.md")
     therm = os.path.join(root, "samples", "inputs", "thermal_report.md")
     out = args.out or os.path.join(root, "samples", "output")
@@ -84,21 +101,27 @@ def demo_cmd(args):
         print(f"  - {w}")
 
 
-def make_samples_cmd(args):
+def make_samples_cmd(_args):
+    """Handle `ddr make-samples` by regenerating the sample PDF inputs."""
     try:
-        from samples.build_sample_pdfs import build as build_pdfs
-    except Exception:
+        from samples.build_sample_pdfs import build as build_pdfs  # pylint: disable=import-outside-toplevel
+    except Exception:  # pylint: disable=broad-exception-caught
         sys.path.insert(0, os.getcwd())
-        from samples.build_sample_pdfs import build as build_pdfs
+        from samples.build_sample_pdfs import build as build_pdfs  # pylint: disable=import-outside-toplevel
     build_pdfs()
     print("Sample PDFs written to samples/inputs/.")
 
 
 def main(argv=None):
-    p = argparse.ArgumentParser(prog="ddr", description="DDR Report Generator (Applied AI Builder)")
+    """Entry point for the `ddr` command-line tool."""
+    p = argparse.ArgumentParser(
+        prog="ddr", description="DDR Report Generator (Applied AI Builder)"
+    )
     sub = p.add_subparsers(dest="cmd", required=True)
 
-    g = sub.add_parser("generate", help="Generate a DDR from inspection + thermal inputs")
+    g = sub.add_parser(
+        "generate", help="Generate a DDR from inspection + thermal inputs"
+    )
     g.add_argument("--inspection", required=True, help="Inspection report (.pdf/.md/.txt)")
     g.add_argument("--thermal", required=True, help="Thermal report (.pdf/.md/.txt)")
     g.add_argument("--out", default="samples/output", help="Output directory")
