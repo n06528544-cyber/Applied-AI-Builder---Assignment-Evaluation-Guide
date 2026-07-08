@@ -11,7 +11,6 @@ import sys
 import tempfile
 
 import streamlit as st
-from streamlit.components.v1 import html
 
 # Allow running directly (e.g. `streamlit run src/ddr/app.py`) by making the
 # `ddr` package importable regardless of the current working directory.
@@ -63,12 +62,30 @@ def main():
                 report_date=date or None,
             )
         severity = report.metadata.get("highest_severity")
-        st.success(f"DDR ready - {len(report.areas)} area(s), highest severity {severity}")
+        st.success(
+            f"DDR ready - {len(report.areas)} area(s), highest severity {severity}"
+        )
+
+        # Text preview only; images are streamed separately below. Rendering the
+        # full base64-embedded HTML via st.html marshals a huge srcdoc and can
+        # OOM, so we preview as markdown and show pictures with st.image.
+        preview_md = "\n".join(
+            ln for ln in render_markdown(report).splitlines()
+            if not ln.strip().startswith("!") and not ln.strip().startswith("- !")
+        )
+        st.markdown(preview_md)
+
+        for area in report.areas:
+            if area.images:
+                st.subheader(f"{area.area} - images")
+                for im in area.images:
+                    if os.path.exists(im.path):
+                        st.image(im.path, caption=im.caption or im.alt or area.area)
+
         report_html = render_html(
             report,
             brand=config.get("report", {}).get("brand_name", "Diagnostic Reports"),
         )
-        html(report_html, height=900, scrolling=True)
         st.download_button(
             "Download HTML",
             report_html,
